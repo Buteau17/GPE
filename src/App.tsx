@@ -190,7 +190,12 @@ export default function App() {
 
       <footer className="app-footer">
         <span>Runs fully client-side · depth model from Hugging Face · nothing leaves your device</span>
-        <span className="credit">Designed by Buteau17</span>
+        <span className="credit">
+          Designed by{" "}
+          <a href="https://github.com/Buteau17" target="_blank" rel="noopener noreferrer">
+            Buteau17
+          </a>
+        </span>
       </footer>
     </div>
   );

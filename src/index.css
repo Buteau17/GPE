@@ -239,3 +239,12 @@ body {
   font-weight: 600;
   letter-spacing: 0.02em;
 }
+
+.app-footer .credit a {
+  color: var(--accent2);
+  text-decoration: none;
+}
+
+.app-footer .credit a:hover {
+  text-decoration: underline;
+}

@@ -7,14 +7,19 @@ deploys it directly, without needing to connect a Git repo.
 cd resume-builder
 npm install
 npx netlify-cli login    # opens a browser tab once, to authorize
+npx netlify-cli unlink   # in case this folder is already linked to a site
 npx netlify-cli deploy --build --prod
 ```
 
 - `--build` runs `npm run build` locally and uploads the correct output —
   this avoids the "publish directory" error you get from dragging the
   raw folder onto Netlify Drop.
-- On first run it asks whether to create a new site or link an existing
-  one. Either is fine; creating a new site is the cleanest option.
+- When it asks how to proceed, choose **"+ Create & configure a new
+  project"** — do NOT link to a site that was previously created via
+  Netlify Drop. Drop-created sites can have a stale "publish directory"
+  setting baked in that isn't editable from the dashboard and will make
+  every build fail with `Your publish directory cannot be the same as
+  the base directory`. A fresh site avoids that entirely.
 - It prints your live URL when done.
 
 ## Optional: AI-tailored resume rewriting

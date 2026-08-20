@@ -1,11 +1,15 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { detectResumeType, extractTextFromResume } from "@/lib/resumeParser";
+import { parseResumeText } from "@/lib/structuredResume";
 import type { ResumeData } from "@/lib/types";
 
 interface Props {
-  onParsed: (data: ResumeData, rawText: string, usedAI: boolean) => void;
+  onParsed: (data: ResumeData, rawText: string) => void;
 }
+
+const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB
 
 export function UploadStep({ onParsed }: Props) {
   const [loading, setLoading] = useState(false);
@@ -18,12 +22,29 @@ export function UploadStep({ onParsed }: Props) {
     setError(null);
     setFileName(file.name);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/resume/parse", { method: "POST", body: formData });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Failed to parse resume.");
-      onParsed(json.resumeData, json.rawText, json.usedAI);
+      if (file.size > MAX_FILE_SIZE) {
+        throw new Error("File is too large (max 8MB).");
+      }
+      const type = detectResumeType(file.name, file.type);
+      if (!type) {
+        throw new Error("Unsupported file type. Please upload a PDF, DOCX, or TXT file.");
+      }
+
+      let rawText: string;
+      try {
+        rawText = await extractTextFromResume(file, type);
+      } catch {
+        throw new Error("Couldn't read that file. Make sure it isn't password-protected or corrupted.");
+      }
+
+      if (!rawText || rawText.trim().length < 40) {
+        throw new Error(
+          "Couldn't find enough text in that file. It may be a scanned image without selectable text.",
+        );
+      }
+
+      const data = parseResumeText(rawText);
+      onParsed(data, rawText);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to parse resume.");
     } finally {
@@ -36,7 +57,8 @@ export function UploadStep({ onParsed }: Props) {
       <div>
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Upload your resume</h2>
         <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          PDF, DOCX, or TXT. We&apos;ll extract your details so you can tailor them to a job posting.
+          PDF, DOCX, or TXT. We&apos;ll extract your details so you can tailor them to a job posting. Everything
+          runs in your browser — nothing is uploaded anywhere.
         </p>
       </div>
 

@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { buildKeywordAnalysis } from "@/lib/keywords";
+import { renderResumePdf } from "@/lib/pdf/generatePdf";
+import { optimizeResume } from "@/lib/resumeOptimizer";
+import { resumeDataToText } from "@/lib/resumeText";
 import type { ExperienceEntry, KeywordAnalysis, ResumeData } from "@/lib/types";
 
 interface Props {
@@ -20,26 +24,20 @@ export function ReviewStep({ resumeData: initial, jobDescription, onBack }: Prop
   const [optimizing, setOptimizing] = useState(false);
   const [optimizeError, setOptimizeError] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<KeywordAnalysis | null>(null);
-  const [usedAI, setUsedAI] = useState(false);
   const [hasOptimized, setHasOptimized] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [pageCountNote, setPageCountNote] = useState<string | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
-  async function handleOptimize() {
+  function handleOptimize() {
     setOptimizing(true);
     setOptimizeError(null);
     try {
-      const res = await fetch("/api/resume/optimize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resumeData, jobDescription }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Failed to optimize resume.");
-      setResumeData(json.optimizedResumeData);
-      setAnalysis(json.keywordAnalysis);
-      setUsedAI(json.usedAI);
+      const beforeText = resumeDataToText(resumeData);
+      const optimized = optimizeResume(resumeData, jobDescription);
+      const afterText = resumeDataToText(optimized);
+      setResumeData(optimized);
+      setAnalysis(buildKeywordAnalysis(beforeText, afterText, jobDescription));
       setHasOptimized(true);
     } catch (err) {
       setOptimizeError(err instanceof Error ? err.message : "Failed to optimize resume.");
@@ -48,33 +46,30 @@ export function ReviewStep({ resumeData: initial, jobDescription, onBack }: Prop
     }
   }
 
+  function slugifyFilename(name: string): string {
+    const slug = name
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+    return slug || "resume";
+  }
+
   async function handleDownload() {
     setDownloading(true);
     setDownloadError(null);
     setPageCountNote(null);
     try {
-      const res = await fetch("/api/resume/pdf", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resumeData }),
-      });
-      if (!res.ok) {
-        const json = await res.json().catch(() => null);
-        throw new Error(json?.error ?? "Failed to generate PDF.");
-      }
-      const pageCount = Number(res.headers.get("X-Page-Count") ?? "1");
+      const { blob, pageCount } = await renderResumePdf(resumeData);
       setPageCountNote(
         pageCount <= 1
           ? "Generated a 1-page PDF."
           : `Generated a ${pageCount}-page PDF — your content didn't fit on one page at a readable size. Trim bullets if you'd like a strict one-pager.`,
       );
-      const blob = await res.blob();
       const downloadUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = downloadUrl;
-      const disposition = res.headers.get("Content-Disposition") ?? "";
-      const match = disposition.match(/filename="(.+)"/);
-      a.download = match?.[1] ?? "resume.pdf";
+      a.download = `${slugifyFilename(resumeData.contact.fullName || "resume")}-resume.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -107,7 +102,7 @@ compact, ATS-friendly PDF — one page when your content fits, more if it doesn&
             {analysis ? (
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 {analysis.scoreBefore}% → <span className="font-semibold text-emerald-600 dark:text-emerald-400">{analysis.scoreAfter}%</span>{" "}
-                of job keywords found in your resume{usedAI ? " (AI-tailored)" : " (rule-based tailoring)"}
+                of job keywords found in your resume
               </p>
             ) : (
               <p className="text-sm text-zinc-500 dark:text-zinc-400">Not yet analyzed against the job posting.</p>

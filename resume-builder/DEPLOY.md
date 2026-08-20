@@ -1,35 +1,32 @@
 # Deploying to Netlify
 
-The easiest path is the Netlify CLI — it builds the app correctly and
-deploys it directly, without needing to connect a Git repo.
+This app is a fully static site now — no server, no API routes, no environment variables. That
+means the simplest possible deploy method actually works: build it, then drag the output folder
+onto Netlify.
+
+## Drag-and-drop (Netlify Drop)
 
 ```bash
-cd resume-builder
 npm install
-npx netlify-cli login    # opens a browser tab once, to authorize
-npx netlify-cli unlink   # in case this folder is already linked to a site
-npx netlify-cli deploy --build --prod
+npm run build
 ```
 
-- `--build` runs `npm run build` locally and uploads the correct output —
-  this avoids the "publish directory" error you get from dragging the
-  raw folder onto Netlify Drop.
-- When it asks how to proceed, choose **"+ Create & configure a new
-  project"** — do NOT link to a site that was previously created via
-  Netlify Drop. Drop-created sites can have a stale "publish directory"
-  setting baked in that isn't editable from the dashboard and will make
-  every build fail with `Your publish directory cannot be the same as
-  the base directory`. A fresh site avoids that entirely.
-- It prints your live URL when done.
+This produces a static `out/` folder. Go to [app.netlify.com/drop](https://app.netlify.com/drop)
+and drag the **`out` folder itself** (not the whole project, not a zip — the folder that contains
+`index.html`) onto the page. Netlify uploads it as-is and gives you a live URL immediately.
 
-## Optional: AI-tailored resume rewriting
+To update the site later, rebuild (`npm run build`) and drag the new `out` folder onto the same
+site's Deploys page.
 
-By default the app tailors resumes with a rule-based keyword optimizer
-(no API key needed). To use Claude for smarter, context-aware rewriting,
-set an environment variable before or after deploying:
+## Netlify CLI (optional alternative)
+
+If you'd rather deploy from the terminal:
 
 ```bash
-npx netlify-cli env:set ANTHROPIC_API_KEY sk-ant-...
+npm install
+npm run build
+npx netlify-cli deploy --dir out --prod
 ```
 
-(Netlify dashboard: Project configuration → Environment variables.)
+`--dir out` uploads the pre-built static folder directly — no need for `--build`, no Next.js
+Runtime plugin, no publish-directory configuration to get wrong.

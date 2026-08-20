@@ -1,28 +1,33 @@
-import { renderToBuffer } from "@react-pdf/renderer";
+import { pdf } from "@react-pdf/renderer";
 import type { ResumeData } from "../types";
 import { ResumeDocument, TIERS, pickFontTierIndex } from "./ResumeDocument";
 
-async function countPdfPages(buffer: Buffer): Promise<number> {
-  const pdfParse = (await import("pdf-parse-fork")).default;
-  const result = await pdfParse(buffer);
-  return result.numpages;
+async function countPdfPages(blob: Blob): Promise<number> {
+  const pdfjsLib = await import("pdfjs-dist");
+  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+    "pdfjs-dist/build/pdf.worker.min.mjs",
+    import.meta.url,
+  ).toString();
+  const arrayBuffer = await blob.arrayBuffer();
+  const doc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  return doc.numPages;
 }
 
 export async function renderResumePdf(
   resume: ResumeData,
-): Promise<{ buffer: Buffer; pageCount: number }> {
+): Promise<{ blob: Blob; pageCount: number }> {
   const startTier = pickFontTierIndex(resume);
 
   // Try progressively smaller (but still readable) tiers to fit compactly.
   // If the content is simply long, the last tier's output — spanning
   // multiple pages — is returned as-is rather than distorting the layout.
-  let buffer: Buffer = await renderToBuffer(ResumeDocument({ resume, tierIndex: startTier }));
-  let pages = await countPdfPages(buffer);
+  let blob = await pdf(ResumeDocument({ resume, tierIndex: startTier })).toBlob();
+  let pages = await countPdfPages(blob);
 
   for (let tierIndex = startTier + 1; pages > 1 && tierIndex < TIERS.length; tierIndex++) {
-    buffer = await renderToBuffer(ResumeDocument({ resume, tierIndex }));
-    pages = await countPdfPages(buffer);
+    blob = await pdf(ResumeDocument({ resume, tierIndex })).toBlob();
+    pages = await countPdfPages(blob);
   }
 
-  return { buffer, pageCount: pages };
+  return { blob, pageCount: pages };
 }

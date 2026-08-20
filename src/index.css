@@ -229,4 +229,13 @@ body {
   text-align: center;
   color: var(--muted);
   font-size: 0.78rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.app-footer .credit {
+  color: var(--text);
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }

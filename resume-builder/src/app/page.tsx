@@ -51,7 +51,7 @@ export default function Home() {
   }
 
   function handleCopyText() {
-    const { contact, summary, experience, education, skills, projects, certifications } = resumeData;
+    const { contact, summary, experience, education, skills, projects, certifications, customSections } = resumeData;
     const lines: string[] = [];
     lines.push(contact.fullName || "Your Name");
     if (contact.title) lines.push(contact.title);
@@ -97,6 +97,11 @@ export default function Home() {
     if (certifications.length > 0) {
       lines.push("CERTIFICATIONS", certifications.join(", "), "");
     }
+    customSections
+      .filter((s) => s.title && s.content)
+      .forEach((s) => {
+        lines.push(s.title.toUpperCase(), s.content, "");
+      });
     navigator.clipboard.writeText(lines.join("\n")).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);

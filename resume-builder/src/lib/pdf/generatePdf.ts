@@ -23,7 +23,7 @@ function capBullets(resume: ResumeData, max: number): ResumeData {
 }
 
 function withoutProjects(resume: ResumeData): ResumeData {
-  return { ...resume, projects: [] };
+  return { ...resume, projects: [], customSections: [] };
 }
 
 function withoutCertifications(resume: ResumeData): ResumeData {
@@ -33,15 +33,16 @@ function withoutCertifications(resume: ResumeData): ResumeData {
 // Content variants tried in order, from least to most destructive. Each one
 // is tried across every font tier before moving on, matching how a human
 // editor would fit a resume to one page: shrink font first, then trim the
-// least essential content, only as a last resort.
+// least essential content (projects and any custom sections, then
+// certifications), only as a last resort.
 function buildCandidates(resume: ResumeData): ResumeData[] {
   const capped4 = capBullets(resume, 4);
   const capped3 = capBullets(resume, 3);
-  const capped3NoProjects = withoutProjects(capped3);
-  const capped3NoProjectsNoCerts = withoutCertifications(capped3NoProjects);
-  const capped2NoProjectsNoCerts = capBullets(capped3NoProjectsNoCerts, 2);
+  const capped3NoExtras = withoutProjects(capped3);
+  const capped3NoExtrasNoCerts = withoutCertifications(capped3NoExtras);
+  const capped2NoExtrasNoCerts = capBullets(capped3NoExtrasNoCerts, 2);
 
-  return [resume, capped4, capped3, capped3NoProjects, capped3NoProjectsNoCerts, capped2NoProjectsNoCerts];
+  return [resume, capped4, capped3, capped3NoExtras, capped3NoExtrasNoCerts, capped2NoExtrasNoCerts];
 }
 
 export async function renderResumePdf(

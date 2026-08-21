@@ -37,6 +37,12 @@ export interface ProjectEntry {
   description: string;
 }
 
+export interface CustomSection {
+  id: string;
+  title: string;
+  content: string;
+}
+
 export interface ResumeData {
   contact: ContactInfo;
   summary: string;
@@ -45,6 +51,7 @@ export interface ResumeData {
   education: EducationEntry[];
   projects: ProjectEntry[];
   certifications: string[];
+  customSections: CustomSection[];
 }
 
 export interface KeywordAnalysis {
@@ -72,6 +79,10 @@ export function emptyProject(): ProjectEntry {
   return { id: uid(), name: "", tech: "", link: "", description: "" };
 }
 
+export function emptyCustomSection(): CustomSection {
+  return { id: uid(), title: "", content: "" };
+}
+
 export function emptyResumeData(): ResumeData {
   return {
     contact: {
@@ -90,5 +101,6 @@ export function emptyResumeData(): ResumeData {
     education: [],
     projects: [],
     certifications: [],
+    customSections: [],
   };
 }

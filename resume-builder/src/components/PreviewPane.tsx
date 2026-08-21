@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function PreviewPane({ resumeData, accent }: Props) {
-  const { contact, summary, experience, education, skills, projects } = resumeData;
+  const { contact, summary, experience, education, skills, projects, certifications, customSections } = resumeData;
 
   return (
     <div className="preview-wrap w-full lg:w-[54%] flex justify-center">
@@ -130,6 +130,20 @@ export function PreviewPane({ resumeData, accent }: Props) {
               ))}
           </PreviewSection>
         ) : null}
+
+        {certifications.length > 0 ? (
+          <PreviewSection title="Certifications" accent={accent}>
+            <p style={{ fontSize: 12.5, fontFamily: "Arial, sans-serif", lineHeight: 1.7, color: "#2A2D33" }}>{certifications.join("  •  ")}</p>
+          </PreviewSection>
+        ) : null}
+
+        {customSections
+          .filter((s) => s.title && s.content)
+          .map((s) => (
+            <PreviewSection key={s.id} title={s.title} accent={accent}>
+              <p style={{ fontSize: 12.5, lineHeight: 1.55, fontFamily: "Arial, sans-serif", color: "#2A2D33" }}>{s.content}</p>
+            </PreviewSection>
+          ))}
       </div>
     </div>
   );

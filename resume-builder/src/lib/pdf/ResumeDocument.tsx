@@ -204,6 +204,15 @@ export function ResumeDocument({ resume, tierIndex }: { resume: ResumeData; tier
             <Text>{resume.certifications.join("  •  ")}</Text>
           </View>
         ) : null}
+
+        {resume.customSections
+          .filter((s) => s.title && s.content)
+          .map((section) => (
+            <View key={section.id} style={styles.section} wrap={false}>
+              <Text style={styles.sectionHeader}>{section.title}</Text>
+              <Text>{section.content}</Text>
+            </View>
+          ))}
       </Page>
     </Document>
   );

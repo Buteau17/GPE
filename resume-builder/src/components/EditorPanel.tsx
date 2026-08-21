@@ -4,7 +4,7 @@ import { Plus, Trash2 } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import { Field, IconBtn, SectionShell, TextArea } from "./FormPrimitives";
 import { TOKENS } from "@/lib/tokens";
-import { emptyEducation, emptyExperience, emptyProject, type ResumeData } from "@/lib/types";
+import { emptyCustomSection, emptyEducation, emptyExperience, emptyProject, type ResumeData } from "@/lib/types";
 
 interface Props {
   resumeData: ResumeData;
@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function EditorPanel({ resumeData, setResumeData }: Props) {
-  const { contact, summary, experience, education, skills, projects } = resumeData;
+  const { contact, summary, experience, education, skills, projects, certifications, customSections } = resumeData;
 
   const updateContact = (field: keyof ResumeData["contact"], value: string) =>
     setResumeData((d) => ({ ...d, contact: { ...d.contact, [field]: value } }));
@@ -58,6 +58,19 @@ export function EditorPanel({ resumeData, setResumeData }: Props) {
 
   const setSkillsText = (value: string) =>
     setResumeData((d) => ({ ...d, skills: value.split(",").map((s) => s.trim()).filter(Boolean) }));
+
+  const setCertificationsText = (value: string) =>
+    setResumeData((d) => ({ ...d, certifications: value.split(",").map((c) => c.trim()).filter(Boolean) }));
+
+  const updateCustomSection = (id: string, field: keyof ResumeData["customSections"][number], value: string) =>
+    setResumeData((d) => ({
+      ...d,
+      customSections: d.customSections.map((s) => (s.id === id ? { ...s, [field]: value } : s)),
+    }));
+  const addCustomSection = () =>
+    setResumeData((d) => ({ ...d, customSections: [...d.customSections, emptyCustomSection()] }));
+  const removeCustomSection = (id: string) =>
+    setResumeData((d) => ({ ...d, customSections: d.customSections.filter((s) => s.id !== id) }));
 
   const updateProject = (id: string, field: keyof ResumeData["projects"][number], value: string) =>
     setResumeData((d) => ({ ...d, projects: d.projects.map((p) => (p.id === id ? { ...p, [field]: value } : p)) }));
@@ -191,6 +204,51 @@ export function EditorPanel({ resumeData, setResumeData }: Props) {
         ))}
         <IconBtn onClick={addProject}>
           <Plus size={12} /> Add project
+        </IconBtn>
+      </SectionShell>
+
+      <SectionShell number="07" title="Certifications" subtitle="Optional — comma-separated" defaultOpen={false}>
+        <TextArea
+          label="Certifications"
+          placeholder="AWS Certified Solutions Architect, Certified Kubernetes Administrator"
+          value={certifications.join(", ")}
+          onChange={(e) => setCertificationsText(e.target.value)}
+          rows={2}
+        />
+      </SectionShell>
+
+      <SectionShell
+        number="08"
+        title="Additional sections"
+        subtitle="Optional — coursework, awards, languages, volunteer work, publications..."
+        defaultOpen={false}
+      >
+        {customSections.map((section, i) => (
+          <div
+            key={section.id}
+            className="mb-4 pb-4"
+            style={{ borderBottom: i < customSections.length - 1 ? `1px dashed ${TOKENS.mist}` : "none" }}
+          >
+            <Field
+              label="Section title"
+              placeholder="Relevant Coursework"
+              value={section.title}
+              onChange={(e) => updateCustomSection(section.id, "title", e.target.value)}
+            />
+            <TextArea
+              label="Content"
+              placeholder="Data Structures, Algorithms, Distributed Systems, Machine Learning"
+              value={section.content}
+              onChange={(e) => updateCustomSection(section.id, "content", e.target.value)}
+              rows={2}
+            />
+            <IconBtn danger onClick={() => removeCustomSection(section.id)}>
+              <Trash2 size={12} /> Remove section
+            </IconBtn>
+          </div>
+        ))}
+        <IconBtn onClick={addCustomSection}>
+          <Plus size={12} /> Add section
         </IconBtn>
       </SectionShell>
     </div>

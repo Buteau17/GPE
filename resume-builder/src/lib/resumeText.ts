@@ -15,5 +15,8 @@ export function resumeDataToText(resume: ResumeData): string {
     parts.push(`${project.name} ${project.tech} ${project.description}`);
   }
   parts.push(resume.certifications.join(", "));
+  for (const section of resume.customSections) {
+    parts.push(`${section.title} ${section.content}`);
+  }
   return parts.join("\n");
 }

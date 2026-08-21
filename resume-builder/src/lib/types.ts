@@ -1,13 +1,16 @@
 export interface ContactInfo {
   fullName: string;
+  title: string;
   email: string;
   phone: string;
   location: string;
   linkedin: string;
+  github: string;
   website: string;
 }
 
 export interface ExperienceEntry {
+  id: string;
   title: string;
   company: string;
   location: string;
@@ -17,11 +20,21 @@ export interface ExperienceEntry {
 }
 
 export interface EducationEntry {
+  id: string;
   school: string;
   degree: string;
   location: string;
   startDate: string;
   endDate: string;
+  details: string;
+}
+
+export interface ProjectEntry {
+  id: string;
+  name: string;
+  tech: string;
+  link: string;
+  description: string;
 }
 
 export interface ResumeData {
@@ -30,6 +43,7 @@ export interface ResumeData {
   skills: string[];
   experience: ExperienceEntry[];
   education: EducationEntry[];
+  projects: ProjectEntry[];
   certifications: string[];
 }
 
@@ -40,27 +54,41 @@ export interface KeywordAnalysis {
   scoreAfter: number;
 }
 
-export interface JobFetchResult {
-  jobTitle: string;
-  company: string;
-  description: string;
-  source: "linkedin" | "indeed" | "glassdoor" | "generic";
+let idCounter = 0;
+export function uid(): string {
+  idCounter += 1;
+  return `id-${Date.now().toString(36)}-${idCounter}`;
+}
+
+export function emptyExperience(): ExperienceEntry {
+  return { id: uid(), title: "", company: "", location: "", startDate: "", endDate: "", bullets: [""] };
+}
+
+export function emptyEducation(): EducationEntry {
+  return { id: uid(), school: "", degree: "", location: "", startDate: "", endDate: "", details: "" };
+}
+
+export function emptyProject(): ProjectEntry {
+  return { id: uid(), name: "", tech: "", link: "", description: "" };
 }
 
 export function emptyResumeData(): ResumeData {
   return {
     contact: {
       fullName: "",
+      title: "",
       email: "",
       phone: "",
       location: "",
       linkedin: "",
+      github: "",
       website: "",
     },
     summary: "",
     skills: [],
     experience: [],
     education: [],
+    projects: [],
     certifications: [],
   };
 }

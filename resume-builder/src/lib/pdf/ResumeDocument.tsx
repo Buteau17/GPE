@@ -108,14 +108,20 @@ export function ResumeDocument({ resume, tierIndex }: { resume: ResumeData; tier
   const styles = buildStyles(tier);
   const { contact } = resume;
 
-  const contactParts = [contact.location, contact.email, contact.phone, contact.linkedin, contact.website].filter(
-    Boolean,
-  );
+  const contactParts = [
+    contact.location,
+    contact.email,
+    contact.phone,
+    contact.linkedin,
+    contact.github,
+    contact.website,
+  ].filter(Boolean);
 
   return (
     <Document title={contact.fullName ? `${contact.fullName} - Resume` : "Resume"}>
       <Page size="LETTER" style={styles.page}>
         {contact.fullName ? <Text style={styles.name}>{contact.fullName}</Text> : null}
+        {contact.title ? <Text style={styles.entrySubtitle}>{contact.title}</Text> : null}
         {contactParts.length > 0 ? (
           <Text style={styles.contactRow}>{contactParts.join("  |  ")}</Text>
         ) : null}
@@ -171,6 +177,22 @@ export function ResumeDocument({ resume, tierIndex }: { resume: ResumeData; tier
                   <Text style={styles.dates}>{formatDateRange(edu.startDate, edu.endDate)}</Text>
                 </View>
                 {edu.location ? <Text style={styles.entrySubtitle}>{edu.location}</Text> : null}
+              </View>
+            ))}
+          </View>
+        ) : null}
+
+        {resume.projects.length > 0 ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionHeader}>Projects</Text>
+            {resume.projects.map((project, idx) => (
+              <View key={idx} style={styles.entry} wrap={false}>
+                <Text style={styles.entryTitle}>
+                  {project.name}
+                  {project.tech ? ` — ${project.tech}` : ""}
+                </Text>
+                {project.description ? <Text>{project.description}</Text> : null}
+                {project.link ? <Text style={styles.entrySubtitle}>{project.link}</Text> : null}
               </View>
             ))}
           </View>

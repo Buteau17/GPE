@@ -1,4 +1,4 @@
-import { emptyResumeData, type ResumeData } from "./types";
+import { emptyResumeData, uid, type ResumeData } from "./types";
 
 const SECTION_HEADERS: Record<string, keyof ResumeData | "skip"> = {
   summary: "summary",
@@ -16,14 +16,18 @@ const SECTION_HEADERS: Record<string, keyof ResumeData | "skip"> = {
   "professional experience": "experience",
   "employment history": "experience",
   education: "education",
+  projects: "projects",
+  "personal projects": "projects",
+  "side projects": "projects",
   certifications: "certifications",
   certificates: "certifications",
   licenses: "certifications",
 };
 
 const EMAIL_RE = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
-const PHONE_RE = /(\+?\d[\d\s().-]{7,}\d)/;
+const PHONE_RE = /(\+?\(?\d[\d\s().-]{7,}\d)/;
 const LINKEDIN_RE = /(linkedin\.com\/[^\s,)]+)/i;
+const GITHUB_RE = /(github\.com\/[^\s,)]+)/i;
 const URL_RE = /(https?:\/\/[^\s,)]+|(?:www\.)?[a-z0-9-]+\.(?:com|dev|io|net|org)[^\s,)]*)/i;
 const DATE_RANGE_RE =
   /((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{4}|\d{4})\s*[-–—]\s*((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{4}|\d{4}|present|current)/i;
@@ -58,7 +62,7 @@ function splitBullets(block: string[]): string[] {
 }
 
 function newEntry(): ResumeData["experience"][number] {
-  return { title: "", company: "", location: "", startDate: "", endDate: "", bullets: [] };
+  return { id: uid(), title: "", company: "", location: "", startDate: "", endDate: "", bullets: [] };
 }
 
 function parseExperienceBlock(lines: string[]): ResumeData["experience"] {
@@ -147,15 +151,62 @@ function parseEducationBlock(lines: string[]): ResumeData["education"] {
 
     const parts = beforeDate.split(/[|,–-]{1}/).map((p) => p.trim()).filter(Boolean);
     current = {
+      id: uid(),
       school: parts[0] ?? beforeDate,
       degree: parts[1] ?? "",
       location: parts[2] ?? "",
       startDate: dateMatch?.[1] ?? "",
       endDate: dateMatch?.[2] ?? "",
+      details: "",
     };
     entries.push(current);
   }
   return entries;
+}
+
+function parseProjectsBlock(lines: string[]): ResumeData["projects"] {
+  const entries: ResumeData["projects"] = [];
+  let current: ResumeData["projects"][number] | null = null;
+
+  for (const raw of lines) {
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+
+    const isBullet = /^[-•*▪●◦‣]/.test(trimmed);
+    const url = trimmed.match(URL_RE);
+
+    if (isBullet && current) {
+      const line = trimmed.replace(/^[-•*▪●◦‣\s]+/, "").trim();
+      current.description = current.description ? `${current.description} ${line}` : line;
+      continue;
+    }
+
+    if (!current || (current.name && current.description)) {
+      current = emptyProjectEntry();
+      entries.push(current);
+    }
+
+    if (url && !current.link) {
+      current.link = url[0];
+      const before = trimmed.slice(0, url.index).trim();
+      if (before && !current.name) current.name = before.replace(/[|,–-]+$/, "").trim();
+      continue;
+    }
+
+    if (!current.name) {
+      const parts = trimmed.split(/[|]/).map((p) => p.trim()).filter(Boolean);
+      current.name = parts[0] ?? trimmed;
+      if (parts[1]) current.tech = parts[1];
+    } else {
+      current.description = current.description ? `${current.description} ${trimmed}` : trimmed;
+    }
+  }
+
+  return entries.filter((e) => e.name || e.description);
+}
+
+function emptyProjectEntry(): ResumeData["projects"][number] {
+  return { id: uid(), name: "", tech: "", link: "", description: "" };
 }
 
 function parseSkillsBlock(lines: string[]): string[] {
@@ -179,8 +230,10 @@ export function heuristicParseResume(rawText: string): ResumeData {
     if (phone && !data.contact.phone) data.contact.phone = phone[0].trim();
     const linkedin = line.match(LINKEDIN_RE);
     if (linkedin && !data.contact.linkedin) data.contact.linkedin = linkedin[0];
+    const github = line.match(GITHUB_RE);
+    if (github && !data.contact.github) data.contact.github = github[0];
     const url = line.match(URL_RE);
-    if (url && !linkedin && !data.contact.website) data.contact.website = url[0];
+    if (url && !linkedin && !github && !data.contact.website) data.contact.website = url[0];
   }
   if (headLines.length > 0 && !EMAIL_RE.test(headLines[0]) && headLines[0].length < 60) {
     data.contact.fullName = headLines[0];
@@ -209,6 +262,8 @@ export function heuristicParseResume(rawText: string): ResumeData {
       data.experience.push(...parseExperienceBlock(section.lines));
     } else if (section.key === "education") {
       data.education.push(...parseEducationBlock(section.lines));
+    } else if (section.key === "projects") {
+      data.projects.push(...parseProjectsBlock(section.lines));
     } else if (section.key === "certifications") {
       data.certifications.push(
         ...section.lines.map((l) => l.replace(/^[-•*\s]+/, "").trim()).filter(Boolean),

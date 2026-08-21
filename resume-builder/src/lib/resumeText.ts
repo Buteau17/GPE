@@ -11,6 +11,9 @@ export function resumeDataToText(resume: ResumeData): string {
   for (const edu of resume.education) {
     parts.push(`${edu.school} ${edu.degree}`);
   }
+  for (const project of resume.projects) {
+    parts.push(`${project.name} ${project.tech} ${project.description}`);
+  }
   parts.push(resume.certifications.join(", "));
   return parts.join("\n");
 }

@@ -13,21 +13,75 @@ async function countPdfPages(blob: Blob): Promise<number> {
   return doc.numPages;
 }
 
+function capBullets(resume: ResumeData, max: number): ResumeData {
+  return {
+    ...resume,
+    experience: resume.experience.map((job) =>
+      job.bullets.length <= max ? job : { ...job, bullets: job.bullets.slice(0, max) },
+    ),
+  };
+}
+
+function withoutProjects(resume: ResumeData): ResumeData {
+  return { ...resume, projects: [] };
+}
+
+function withoutCertifications(resume: ResumeData): ResumeData {
+  return { ...resume, certifications: [] };
+}
+
+// Content variants tried in order, from least to most destructive. Each one
+// is tried across every font tier before moving on, matching how a human
+// editor would fit a resume to one page: shrink font first, then trim the
+// least essential content, only as a last resort.
+function buildCandidates(resume: ResumeData): ResumeData[] {
+  const capped4 = capBullets(resume, 4);
+  const capped3 = capBullets(resume, 3);
+  const capped3NoProjects = withoutProjects(capped3);
+  const capped3NoProjectsNoCerts = withoutCertifications(capped3NoProjects);
+  const capped2NoProjectsNoCerts = capBullets(capped3NoProjectsNoCerts, 2);
+
+  return [resume, capped4, capped3, capped3NoProjects, capped3NoProjectsNoCerts, capped2NoProjectsNoCerts];
+}
+
 export async function renderResumePdf(
   resume: ResumeData,
-): Promise<{ blob: Blob; pageCount: number }> {
+  options?: { allowMultiPage?: boolean },
+): Promise<{ blob: Blob; pageCount: number; trimmed: boolean }> {
   const startTier = pickFontTierIndex(resume);
 
-  // Try progressively smaller (but still readable) tiers to fit compactly.
-  // If the content is simply long, the last tier's output — spanning
-  // multiple pages — is returned as-is rather than distorting the layout.
-  let blob = await pdf(ResumeDocument({ resume, tierIndex: startTier })).toBlob();
-  let pages = await countPdfPages(blob);
-
-  for (let tierIndex = startTier + 1; pages > 1 && tierIndex < TIERS.length; tierIndex++) {
-    blob = await pdf(ResumeDocument({ resume, tierIndex })).toBlob();
-    pages = await countPdfPages(blob);
+  if (options?.allowMultiPage) {
+    // User explicitly wants however many pages their content needs — render
+    // at a normal readable size, untrimmed, and report however many pages
+    // that produces instead of fighting to compress it into one.
+    const blob = await pdf(ResumeDocument({ resume, tierIndex: startTier })).toBlob();
+    const pages = await countPdfPages(blob);
+    return { blob, pageCount: pages, trimmed: false };
   }
 
-  return { blob, pageCount: pages };
+  const candidates = buildCandidates(resume);
+
+  let bestBlob: Blob | null = null;
+  let bestPages = Infinity;
+
+  for (let candidateIndex = 0; candidateIndex < candidates.length; candidateIndex++) {
+    const candidate = candidates[candidateIndex];
+    for (let tierIndex = candidateIndex === 0 ? startTier : 0; tierIndex < TIERS.length; tierIndex++) {
+      const blob = await pdf(ResumeDocument({ resume: candidate, tierIndex })).toBlob();
+      const pages = await countPdfPages(blob);
+
+      if (pages === 1) {
+        return { blob, pageCount: 1, trimmed: candidateIndex > 0 };
+      }
+      if (pages < bestPages) {
+        bestBlob = blob;
+        bestPages = pages;
+      }
+    }
+  }
+
+  // Nothing fit on one page even after trimming — return the closest result
+  // (most content preserved, smallest overflow) rather than distorting the
+  // layout further.
+  return { blob: bestBlob as Blob, pageCount: bestPages, trimmed: candidates.length > 1 };
 }

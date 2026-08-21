@@ -25,6 +25,7 @@ export default function Home() {
   const [analysis, setAnalysis] = useState<KeywordAnalysis | null>(null);
   const [tailoring, setTailoring] = useState(false);
   const [accent, setAccent] = useState(ACCENTS[0]);
+  const [allowMultiPage, setAllowMultiPage] = useState(false);
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [pageCountNote, setPageCountNote] = useState<string | null>(null);
@@ -107,11 +108,13 @@ export default function Home() {
     setDownloadError(null);
     setPageCountNote(null);
     try {
-      const { blob, pageCount } = await renderResumePdf(resumeData);
+      const { blob, pageCount, trimmed } = await renderResumePdf(resumeData, { allowMultiPage });
       setPageCountNote(
         pageCount <= 1
-          ? "Generated a 1-page PDF."
-          : `Generated a ${pageCount}-page PDF — trim content if you'd like a strict one-pager.`,
+          ? trimmed
+            ? "Generated a 1-page PDF (some bullets/sections were shortened in the PDF only — your edits above are unchanged)."
+            : "Generated a 1-page PDF."
+          : `Generated a ${pageCount}-page PDF.`,
       );
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -162,6 +165,18 @@ export default function Home() {
               />
             ))}
           </div>
+          <label
+            className="flex items-center gap-1.5 px-2 cursor-pointer select-none"
+            style={{ fontFamily: "var(--font-plex-mono)", fontSize: 11, color: "#8B94A3" }}
+          >
+            <input
+              type="checkbox"
+              checked={allowMultiPage}
+              onChange={(e) => setAllowMultiPage(e.target.checked)}
+              className="accent-current"
+            />
+            Allow multiple pages
+          </label>
           <button
             type="button"
             onClick={handleCopyText}

@@ -214,7 +214,7 @@ function parseSkillsBlock(lines: string[]): string[] {
   return joined
     .split(/[,•|;\n]/)
     .map((s) => s.replace(/^[-*\s]+/, "").trim())
-    .filter((s) => s.length > 0 && s.length < 60);
+    .filter((s) => s.length > 0 && s.length < 400);
 }
 
 export function heuristicParseResume(rawText: string): ResumeData {

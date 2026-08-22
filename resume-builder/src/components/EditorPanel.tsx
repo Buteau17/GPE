@@ -182,8 +182,8 @@ export function EditorPanel({ resumeData, setResumeData }: Props) {
         </IconBtn>
       </SectionShell>
 
-      <SectionShell number="05" title="Skills" subtitle="Comma-separated">
-        <TextArea label="Skills" value={skills.join(", ")} onChange={(e) => setSkillsText(e.target.value)} rows={2} />
+      <SectionShell number="05" title="Skills" subtitle="Comma-separated — write as much as you need">
+        <TextArea label="Skills" value={skills.join(", ")} onChange={(e) => setSkillsText(e.target.value)} rows={5} />
       </SectionShell>
 
       <SectionShell number="06" title="Projects" subtitle="Optional — great for early-career candidates" defaultOpen={false}>

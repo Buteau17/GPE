@@ -3,7 +3,7 @@
 import { AlertCircle, Loader2, Sparkles, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { TextArea } from "./FormPrimitives";
-import { detectResumeType, extractTextFromResume } from "@/lib/resumeParser";
+import { PasswordProtectedPdfError, detectResumeType, extractTextFromResume } from "@/lib/resumeParser";
 import { parseResumeText } from "@/lib/structuredResume";
 import { TOKENS } from "@/lib/tokens";
 import type { ResumeData } from "@/lib/types";
@@ -40,14 +40,22 @@ export function IntakePanel({
     setFileName(file.name);
     try {
       if (file.size > MAX_FILE_SIZE) throw new Error("File is too large (max 8MB).");
+      if (/\.doc$/i.test(file.name)) {
+        throw new Error(
+          "Old .doc files (Word 97-2003) aren't supported — only .docx. Open it in Word/Google Docs and save/export as .docx or PDF.",
+        );
+      }
       const type = detectResumeType(file.name, file.type);
       if (!type) throw new Error("Unsupported file type. Please upload a PDF, DOCX, or TXT file.");
 
       let rawText: string;
       try {
         rawText = await extractTextFromResume(file, type);
-      } catch {
-        throw new Error("Couldn't read that file. Make sure it isn't password-protected or corrupted.");
+      } catch (extractErr) {
+        if (extractErr instanceof PasswordProtectedPdfError) {
+          throw new Error("This PDF is password-protected. Remove the password and try again.");
+        }
+        throw new Error("Couldn't read that file. Make sure it isn't corrupted, and try re-saving/exporting it.");
       }
       if (!rawText || rawText.trim().length < 40) {
         throw new Error("Couldn't find enough text in that file. It may be a scanned image without selectable text.");

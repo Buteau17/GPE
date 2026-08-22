@@ -25,7 +25,7 @@ export default function Home() {
   const [analysis, setAnalysis] = useState<KeywordAnalysis | null>(null);
   const [tailoring, setTailoring] = useState(false);
   const [accent, setAccent] = useState(ACCENTS[0]);
-  const [allowMultiPage, setAllowMultiPage] = useState(false);
+  const [fitToOnePage, setFitToOnePage] = useState(false);
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [pageCountNote, setPageCountNote] = useState<string | null>(null);
@@ -113,7 +113,7 @@ export default function Home() {
     setDownloadError(null);
     setPageCountNote(null);
     try {
-      const { blob, pageCount, trimmed } = await renderResumePdf(resumeData, { allowMultiPage });
+      const { blob, pageCount, trimmed } = await renderResumePdf(resumeData, { allowMultiPage: !fitToOnePage });
       setPageCountNote(
         pageCount <= 1
           ? trimmed
@@ -148,7 +148,7 @@ export default function Home() {
             resume<span style={{ color: accent.hex }}>.</span>build
           </div>
           <div style={{ fontFamily: "var(--font-plex-mono)", fontSize: 11, color: "#8B94A3" }}>
-            upload your CV, tailor it to a job posting, export a 1-page ATS-friendly PDF
+            upload your CV, tailor it to a job posting, export an ATS-friendly PDF
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -176,11 +176,11 @@ export default function Home() {
           >
             <input
               type="checkbox"
-              checked={allowMultiPage}
-              onChange={(e) => setAllowMultiPage(e.target.checked)}
+              checked={fitToOnePage}
+              onChange={(e) => setFitToOnePage(e.target.checked)}
               className="accent-current"
             />
-            Allow multiple pages
+            Fit to one page (may trim content)
           </label>
           <button
             type="button"

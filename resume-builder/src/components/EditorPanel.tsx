@@ -181,7 +181,7 @@ export function EditorPanel({ resumeData, setResumeData }: Props) {
       </SectionShell>
 
       <SectionShell number="05" title="Skills" subtitle="Write freely — however you'd like to format it">
-        <TextArea label="Skills" value={skills} onChange={(e) => setSkills(e.target.value)} rows={5} />
+        <TextArea label="Skills" value={skills} onChange={(e) => setSkills(e.target.value)} rows={2} />
       </SectionShell>
 
       <SectionShell number="06" title="Projects" subtitle="Optional — great for early-career candidates" defaultOpen={false}>
@@ -211,7 +211,7 @@ export function EditorPanel({ resumeData, setResumeData }: Props) {
           placeholder={"AWS Certified Solutions Architect\nCertified Kubernetes Administrator"}
           value={certifications}
           onChange={(e) => setCertifications(e.target.value)}
-          rows={3}
+          rows={2}
         />
       </SectionShell>
 

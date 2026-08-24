@@ -209,12 +209,11 @@ function emptyProjectEntry(): ResumeData["projects"][number] {
   return { id: uid(), name: "", tech: "", link: "", description: "" };
 }
 
-function parseSkillsBlock(lines: string[]): string[] {
-  const joined = lines.join(", ");
-  return joined
-    .split(/[,•|;\n]/)
-    .map((s) => s.replace(/^[-*\s]+/, "").trim())
-    .filter((s) => s.length > 0 && s.length < 400);
+function parseSkillsBlock(lines: string[]): string {
+  return lines
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .join("\n");
 }
 
 export function heuristicParseResume(rawText: string): ResumeData {
@@ -257,7 +256,7 @@ export function heuristicParseResume(rawText: string): ResumeData {
     if (section.key === "summary") {
       data.summary = section.lines.map((l) => l.trim()).filter(Boolean).join(" ");
     } else if (section.key === "skills") {
-      data.skills.push(...parseSkillsBlock(section.lines));
+      data.skills = parseSkillsBlock(section.lines);
     } else if (section.key === "experience") {
       data.experience.push(...parseExperienceBlock(section.lines));
     } else if (section.key === "education") {
@@ -265,9 +264,10 @@ export function heuristicParseResume(rawText: string): ResumeData {
     } else if (section.key === "projects") {
       data.projects.push(...parseProjectsBlock(section.lines));
     } else if (section.key === "certifications") {
-      data.certifications.push(
-        ...section.lines.map((l) => l.replace(/^[-•*\s]+/, "").trim()).filter(Boolean),
-      );
+      data.certifications = section.lines
+        .map((l) => l.replace(/^[-•*\s]+/, "").trim())
+        .filter(Boolean)
+        .join("\n");
     }
   }
 

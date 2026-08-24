@@ -27,7 +27,7 @@ function withoutProjects(resume: ResumeData): ResumeData {
 }
 
 function withoutCertifications(resume: ResumeData): ResumeData {
-  return { ...resume, certifications: [] };
+  return { ...resume, certifications: "" };
 }
 
 // Content variants tried in order, from least to most destructive. Each one

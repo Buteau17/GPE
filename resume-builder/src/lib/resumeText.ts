@@ -3,7 +3,7 @@ import type { ResumeData } from "./types";
 export function resumeDataToText(resume: ResumeData): string {
   const parts: string[] = [];
   parts.push(resume.summary);
-  parts.push(resume.skills.join(", "));
+  parts.push(resume.skills);
   for (const job of resume.experience) {
     parts.push(`${job.title} ${job.company}`);
     parts.push(job.bullets.join(" "));
@@ -14,7 +14,7 @@ export function resumeDataToText(resume: ResumeData): string {
   for (const project of resume.projects) {
     parts.push(`${project.name} ${project.tech} ${project.description}`);
   }
-  parts.push(resume.certifications.join(", "));
+  parts.push(resume.certifications);
   for (const section of resume.customSections) {
     parts.push(`${section.title} ${section.content}`);
   }

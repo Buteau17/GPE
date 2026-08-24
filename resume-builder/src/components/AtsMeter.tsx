@@ -24,7 +24,7 @@ export function AtsMeter({ resumeData, analysis, accent }: Props) {
       label: "Quantified impact",
       pass: resumeData.experience.some((e) => e.bullets.some((b) => /\d/.test(b))),
     },
-    { label: "Skills listed", pass: resumeData.skills.length > 0 },
+    { label: "Skills listed", pass: resumeData.skills.trim().length > 0 },
     { label: "Education added", pass: resumeData.education.some((e) => e.school.trim())},
   ];
   const passCount = checks.filter((c) => c.pass).length;

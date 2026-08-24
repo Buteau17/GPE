@@ -82,8 +82,8 @@ export default function Home() {
         lines.push("");
       });
     }
-    if (skills.length > 0) {
-      lines.push("SKILLS", skills.join(", "), "");
+    if (skills.trim()) {
+      lines.push("SKILLS", skills, "");
     }
     if (projects.some((p) => p.name)) {
       lines.push("PROJECTS");
@@ -94,8 +94,8 @@ export default function Home() {
         lines.push("");
       });
     }
-    if (certifications.length > 0) {
-      lines.push("CERTIFICATIONS", certifications.join(", "), "");
+    if (certifications.trim()) {
+      lines.push("CERTIFICATIONS", certifications, "");
     }
     customSections
       .filter((s) => s.title && s.content)

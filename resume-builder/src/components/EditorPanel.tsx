@@ -56,11 +56,9 @@ export function EditorPanel({ resumeData, setResumeData }: Props) {
   const removeEducation = (id: string) =>
     setResumeData((d) => ({ ...d, education: d.education.filter((e) => e.id !== id) }));
 
-  const setSkillsText = (value: string) =>
-    setResumeData((d) => ({ ...d, skills: value.split(",").map((s) => s.trim()).filter(Boolean) }));
+  const setSkills = (value: string) => setResumeData((d) => ({ ...d, skills: value }));
 
-  const setCertificationsText = (value: string) =>
-    setResumeData((d) => ({ ...d, certifications: value.split(",").map((c) => c.trim()).filter(Boolean) }));
+  const setCertifications = (value: string) => setResumeData((d) => ({ ...d, certifications: value }));
 
   const updateCustomSection = (id: string, field: keyof ResumeData["customSections"][number], value: string) =>
     setResumeData((d) => ({
@@ -118,7 +116,7 @@ export function EditorPanel({ resumeData, setResumeData }: Props) {
                 textTransform: "uppercase",
               }}
             >
-              Bullets — lead with an action verb, add a number
+              Bullets
             </span>
             {exp.bullets.map((b, idx) => (
               <div key={idx} className="flex items-center gap-2 mt-1.5">
@@ -182,8 +180,8 @@ export function EditorPanel({ resumeData, setResumeData }: Props) {
         </IconBtn>
       </SectionShell>
 
-      <SectionShell number="05" title="Skills" subtitle="Comma-separated — write as much as you need">
-        <TextArea label="Skills" value={skills.join(", ")} onChange={(e) => setSkillsText(e.target.value)} rows={5} />
+      <SectionShell number="05" title="Skills" subtitle="Write freely — however you'd like to format it">
+        <TextArea label="Skills" value={skills} onChange={(e) => setSkills(e.target.value)} rows={5} />
       </SectionShell>
 
       <SectionShell number="06" title="Projects" subtitle="Optional — great for early-career candidates" defaultOpen={false}>
@@ -207,13 +205,13 @@ export function EditorPanel({ resumeData, setResumeData }: Props) {
         </IconBtn>
       </SectionShell>
 
-      <SectionShell number="07" title="Certifications" subtitle="Optional — comma-separated" defaultOpen={false}>
+      <SectionShell number="07" title="Certifications" subtitle="Optional — write freely" defaultOpen={false}>
         <TextArea
           label="Certifications"
-          placeholder="AWS Certified Solutions Architect, Certified Kubernetes Administrator"
-          value={certifications.join(", ")}
-          onChange={(e) => setCertificationsText(e.target.value)}
-          rows={2}
+          placeholder={"AWS Certified Solutions Architect\nCertified Kubernetes Administrator"}
+          value={certifications}
+          onChange={(e) => setCertifications(e.target.value)}
+          rows={3}
         />
       </SectionShell>
 

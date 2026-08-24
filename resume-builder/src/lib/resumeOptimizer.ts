@@ -11,13 +11,11 @@ function scoreText(text: string, keywords: string[]): number {
 export function optimizeResume(resume: ResumeData, jobDescription: string): ResumeData {
   const keywords = extractJobKeywords(jobDescription, 40);
 
-  const skills = [...resume.skills].sort((a, b) => scoreText(b, keywords) - scoreText(a, keywords));
-
   const experience = resume.experience.map((job) => {
     if (job.bullets.length <= MAX_BULLETS_PER_ROLE) return job;
     const ranked = [...job.bullets].sort((a, b) => scoreText(b, keywords) - scoreText(a, keywords));
     return { ...job, bullets: ranked.slice(0, MAX_BULLETS_PER_ROLE) };
   });
 
-  return { ...resume, skills, experience };
+  return { ...resume, experience };
 }

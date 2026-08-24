@@ -133,10 +133,10 @@ export function ResumeDocument({ resume, tierIndex }: { resume: ResumeData; tier
           </View>
         ) : null}
 
-        {resume.skills.length > 0 ? (
+        {resume.skills.trim() ? (
           <View style={styles.section}>
             <Text style={styles.sectionHeader}>Skills</Text>
-            <Text style={styles.skillsText}>{resume.skills.join("  •  ")}</Text>
+            <Text style={styles.skillsText}>{resume.skills}</Text>
           </View>
         ) : null}
 
@@ -198,10 +198,10 @@ export function ResumeDocument({ resume, tierIndex }: { resume: ResumeData; tier
           </View>
         ) : null}
 
-        {resume.certifications.length > 0 ? (
+        {resume.certifications.trim() ? (
           <View style={styles.section}>
             <Text style={styles.sectionHeader}>Certifications</Text>
-            <Text>{resume.certifications.join("  •  ")}</Text>
+            <Text>{resume.certifications}</Text>
           </View>
         ) : null}
 

@@ -46,11 +46,11 @@ export interface CustomSection {
 export interface ResumeData {
   contact: ContactInfo;
   summary: string;
-  skills: string[];
+  skills: string;
   experience: ExperienceEntry[];
   education: EducationEntry[];
   projects: ProjectEntry[];
-  certifications: string[];
+  certifications: string;
   customSections: CustomSection[];
 }
 
@@ -96,11 +96,11 @@ export function emptyResumeData(): ResumeData {
       website: "",
     },
     summary: "",
-    skills: [],
+    skills: "",
     experience: [],
     education: [],
     projects: [],
-    certifications: [],
+    certifications: "",
     customSections: [],
   };
 }

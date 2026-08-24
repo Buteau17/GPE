@@ -106,9 +106,19 @@ export function PreviewPane({ resumeData, accent }: Props) {
           </PreviewSection>
         ) : null}
 
-        {skills.length > 0 ? (
+        {skills.trim() ? (
           <PreviewSection title="Skills" accent={accent}>
-            <p style={{ fontSize: 12.5, fontFamily: "Arial, sans-serif", lineHeight: 1.7, color: "#2A2D33" }}>{skills.join("  •  ")}</p>
+            <p
+              style={{
+                fontSize: 12.5,
+                fontFamily: "Arial, sans-serif",
+                lineHeight: 1.7,
+                color: "#2A2D33",
+                whiteSpace: "pre-wrap",
+              }}
+            >
+              {skills}
+            </p>
           </PreviewSection>
         ) : null}
 
@@ -131,9 +141,19 @@ export function PreviewPane({ resumeData, accent }: Props) {
           </PreviewSection>
         ) : null}
 
-        {certifications.length > 0 ? (
+        {certifications.trim() ? (
           <PreviewSection title="Certifications" accent={accent}>
-            <p style={{ fontSize: 12.5, fontFamily: "Arial, sans-serif", lineHeight: 1.7, color: "#2A2D33" }}>{certifications.join("  •  ")}</p>
+            <p
+              style={{
+                fontSize: 12.5,
+                fontFamily: "Arial, sans-serif",
+                lineHeight: 1.7,
+                color: "#2A2D33",
+                whiteSpace: "pre-wrap",
+              }}
+            >
+              {certifications}
+            </p>
           </PreviewSection>
         ) : null}
 

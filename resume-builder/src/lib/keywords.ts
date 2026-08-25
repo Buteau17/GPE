@@ -34,6 +34,22 @@ const GENERIC_JOB_WORDS = new Set([
   "opportunity",
   "environment",
   "successful",
+  "looking",
+  "seeking",
+  "seek",
+  "build",
+  "building",
+  "improve",
+  "improving",
+  "help",
+  "helping",
+  "great",
+  "good",
+  "new",
+  "plus",
+  "you",
+  "your",
+  "we",
 ]);
 
 function tokenize(text: string): string[] {

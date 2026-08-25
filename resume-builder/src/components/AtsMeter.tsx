@@ -1,6 +1,6 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 import { TOKENS } from "@/lib/tokens";
 import type { KeywordAnalysis, ResumeData } from "@/lib/types";
 
@@ -8,9 +8,10 @@ interface Props {
   resumeData: ResumeData;
   analysis: KeywordAnalysis | null;
   accent: string;
+  onAddSkill: (keyword: string) => void;
 }
 
-export function AtsMeter({ resumeData, analysis, accent }: Props) {
+export function AtsMeter({ resumeData, analysis, accent, onAddSkill }: Props) {
   const checks = [
     { label: "Full name", pass: resumeData.contact.fullName.trim().length > 0 },
     { label: "Valid email", pass: /\S+@\S+\.\S+/.test(resumeData.contact.email) },
@@ -99,17 +100,27 @@ export function AtsMeter({ resumeData, analysis, accent }: Props) {
           {analysis.missing.length > 0 ? (
             <>
               <div style={{ fontSize: 11, color: TOKENS.slate, marginBottom: 4 }}>
-                Still missing (only add if truthful):
+                Still missing — click to add to Skills (only if truthful):
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {analysis.missing.slice(0, 15).map((kw) => (
-                  <span
+                  <button
+                    type="button"
                     key={kw}
-                    className="px-2 py-1 rounded"
-                    style={{ fontSize: 11, background: "#F5EBDA", color: TOKENS.amber, fontFamily: "var(--font-plex-mono)" }}
+                    onClick={() => onAddSkill(kw)}
+                    className="flex items-center gap-1 px-2 py-1 rounded transition hover:opacity-80"
+                    style={{
+                      fontSize: 11,
+                      background: "#F5EBDA",
+                      color: TOKENS.amber,
+                      fontFamily: "var(--font-plex-mono)",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
                   >
+                    <Plus size={10} />
                     {kw}
-                  </span>
+                  </button>
                 ))}
               </div>
             </>

@@ -50,6 +50,21 @@ export default function Home() {
     }
   }
 
+  function handleAddSkillFromKeyword(keyword: string) {
+    setResumeData((d) => {
+      if (d.skills.toLowerCase().includes(keyword.toLowerCase())) return d;
+      const sep = d.skills.trim() ? "\n" : "";
+      return { ...d, skills: d.skills + sep + keyword };
+    });
+    setAnalysis((a) => {
+      if (!a || a.matched.includes(keyword)) return a;
+      const total = a.matched.length + a.missing.length;
+      const matched = [...a.matched, keyword];
+      const missing = a.missing.filter((k) => k !== keyword);
+      return { ...a, matched, missing, scoreAfter: total === 0 ? 100 : Math.round((matched.length / total) * 100) };
+    });
+  }
+
   function handleCopyText() {
     const { contact, summary, experience, education, skills, projects, certifications, customSections } = resumeData;
     const lines: string[] = [];
@@ -228,7 +243,12 @@ export default function Home() {
 
       <div className="flex flex-col lg:flex-row gap-6 p-6 pt-2 max-w-[1400px] mx-auto">
         <div className="no-print w-full lg:w-[46%] rounded-lg" style={{ background: "#fff", border: "1px solid #E7E5DC" }}>
-          <AtsMeter resumeData={resumeData} analysis={analysis} accent={accent.hex} />
+          <AtsMeter
+            resumeData={resumeData}
+            analysis={analysis}
+            accent={accent.hex}
+            onAddSkill={handleAddSkillFromKeyword}
+          />
           <EditorPanel resumeData={resumeData} setResumeData={setResumeData} />
         </div>
         <PreviewPane resumeData={resumeData} accent={accent.hex} />
